@@ -7,9 +7,11 @@ const AUTH_STATE_KEY = 'auth_state';
 
 export function useBiometrics() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadAuthState() {
+      setIsLoading(true);
       try {
         const storedState = await AsyncStorage.getItem(AUTH_STATE_KEY);
         if (storedState) {
@@ -18,6 +20,7 @@ export function useBiometrics() {
       } catch (e) {
         console.error('Failed to load auth state', e);
       }
+      setIsLoading(false);
     }
     loadAuthState();
   }, []);
@@ -40,5 +43,5 @@ export function useBiometrics() {
     await AsyncStorage.removeItem(AUTH_STATE_KEY);
   }, []);
 
-  return { isAuthenticated, authenticate, logout };
+  return { isAuthenticated, isLoading, authenticate, logout };
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useBiometrics } from '@/hooks/useBiometrics';
@@ -8,19 +8,16 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, authenticate } = useBiometrics();
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isLoading, authenticate } = useBiometrics();
 
   useEffect(() => {
     async function checkAuth() {
-      console.log(isAuthenticated);
-      if (!isAuthenticated) {
+      if (!isLoading && !isAuthenticated) {
         await authenticate();
       }
-      setIsLoading(false);
     }
     checkAuth();
-  }, [isAuthenticated, authenticate]);
+  }, [isAuthenticated, isLoading, authenticate]);
 
   if (isLoading) {
     return (
