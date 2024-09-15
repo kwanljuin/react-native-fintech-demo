@@ -11,7 +11,6 @@ import { useLocalSearchParams } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getTransactionById } from '@/services/transactions';
 import { Transaction } from '@/models/Transaction';
-import { useBiometrics } from '@/hooks/useBiometrics';
 import { formatDate, formatTime } from '@/utils/date';
 
 export default function TransactionDetail() {
@@ -19,7 +18,6 @@ export default function TransactionDetail() {
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated, authenticate } = useBiometrics();
 
   useEffect(() => {
     const loadTransaction = async () => {
@@ -102,16 +100,11 @@ export default function TransactionDetail() {
           <DetailItem
             icon="card-outline"
             label="Amount"
-            value={
-              isAuthenticated
-                ? `${transaction.type === 'credit' ? '+' : '-'}RM${Math.abs(transaction.amount).toFixed(2)}`
-                : '••••'
-            }
+            value={`${transaction.type === 'credit' ? '+' : '-'}RM${Math.abs(transaction.amount).toFixed(2)}`}
             valueStyle={[
               styles.amount,
               transaction.type === 'credit' ? styles.credit : styles.debit,
             ]}
-            onPress={isAuthenticated ? undefined : authenticate}
           />
         </View>
       </View>

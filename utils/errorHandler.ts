@@ -1,5 +1,20 @@
 import { Alert } from 'react-native';
-import { BiometricErrorType, BiometricError } from '@/services/auth';
+
+export enum BiometricErrorType {
+  NO_HARDWARE = 'NO_HARDWARE',
+  NOT_ENROLLED = 'NOT_ENROLLED',
+  CANCELED = 'CANCELED',
+  DISABLED = 'DISABLED',
+  LOCKOUT = 'LOCKOUT',
+  USER_FALLBACK = 'USER_FALLBACK',
+  NOT_AVAILABLE = 'NOT_AVAILABLE',
+  UNKNOWN = 'UNKNOWN',
+}
+
+export interface BiometricError {
+  type: BiometricErrorType;
+  message: string;
+}
 
 export function handleBiometricError(error: BiometricError) {
   switch (error.type) {

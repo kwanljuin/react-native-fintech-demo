@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { authenticateWithBiometrics, BiometricError } from '@/services/auth';
-import { handleBiometricError } from '@/utils/errorHandler';
+import { authenticateWithBiometrics } from '@/services/auth';
+import { BiometricError, handleBiometricError } from '@/utils/errorHandler';
 
 const AUTH_STATE_KEY = 'auth_state';
 
@@ -19,8 +19,9 @@ export function useBiometrics() {
         }
       } catch (e) {
         console.error('Failed to load auth state', e);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     loadAuthState();
   }, []);

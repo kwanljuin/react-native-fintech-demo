@@ -21,21 +21,24 @@ export default function TransactionHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [showAmounts, setShowAmounts] = useState(false);
+  const [showSensitiveData, setShowSensitiveData] = useState(false);
   const [groupedTransactions, setGroupedTransactions] = useState<
     GroupedTransactions[]
   >([]);
 
-  const revealAmounts = async () => {
-    if (!showAmounts) {
+  const accessSensitiveData = async () => {
+    if (!showSensitiveData) {
       try {
         const success = await authenticateWithBiometrics();
-        if (success) setShowAmounts(true);
+        if (success) setShowSensitiveData(true);
+        return true;
       } catch (error) {
-        setShowAmounts(false);
+        setShowSensitiveData(false);
+        return false;
       }
     } else {
-      setShowAmounts(false);
+      setShowSensitiveData(false);
+      return false;
     }
   };
 
@@ -105,11 +108,20 @@ export default function TransactionHistory() {
     loadTransactions();
   }, [loadTransactions]);
 
-  const handleTransactionPress = (id: string) => {
-    router.push({
-      pathname: '/(main)/[id]',
-      params: { id },
-    });
+  const handleTransactionPress = async (id: string) => {
+    if (!showSensitiveData) {
+      const granted = await accessSensitiveData();
+      if (granted)
+        router.push({
+          pathname: '/(main)/[id]',
+          params: { id },
+        });
+    } else {
+      router.push({
+        pathname: '/(main)/[id]',
+        params: { id },
+      });
+    }
   };
 
   if (loading) {
@@ -130,14 +142,16 @@ export default function TransactionHistory() {
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.revealButton} onPress={revealAmounts}>
+      <Pressable style={styles.revealButton} onPress={accessSensitiveData}>
         <Ionicons
-          name={showAmounts ? 'eye-off' : 'eye'}
+          name={showSensitiveData ? 'eye-off' : 'eye'}
           size={24}
           color="#000"
         />
         <Text style={styles.revealText}>
-          {showAmounts ? 'Hide Amounts' : 'Reveal Amounts'}
+          {showSensitiveData
+            ? 'Hide Sensitive Information'
+            : 'Reveal Sensitive Information'}
         </Text>
       </Pressable>
       <SectionList
@@ -147,7 +161,7 @@ export default function TransactionHistory() {
         renderItem={({ item }) => (
           <TransactionItem
             transaction={item}
-            showAmounts={showAmounts}
+            showSensitiveData={showSensitiveData}
             onPress={() => handleTransactionPress(item.id)}
           />
         )}

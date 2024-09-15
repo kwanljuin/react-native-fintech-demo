@@ -5,11 +5,15 @@ import { formatTime } from '@/utils/date';
 
 interface Props {
   transaction: Transaction;
-  showAmounts: boolean;
+  showSensitiveData: boolean;
   onPress: () => void;
 }
 
-export function TransactionItem({ transaction, showAmounts, onPress }: Props) {
+export function TransactionItem({
+  transaction,
+  showSensitiveData,
+  onPress,
+}: Props) {
   return (
     <Pressable onPress={onPress}>
       <View style={styles.container}>
@@ -17,7 +21,7 @@ export function TransactionItem({ transaction, showAmounts, onPress }: Props) {
           <Text style={styles.description}>{transaction.description}</Text>
           <Text style={styles.time}>{formatTime(transaction.date)}</Text>
         </View>
-        {showAmounts ? (
+        {showSensitiveData ? (
           <Text
             style={[
               styles.amount,

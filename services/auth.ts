@@ -1,21 +1,5 @@
-import { createBiometricError } from '@/utils/errorHandler';
+import { BiometricErrorType, createBiometricError } from '@/utils/errorHandler';
 import * as LocalAuthentication from 'expo-local-authentication';
-
-export enum BiometricErrorType {
-  NO_HARDWARE = 'NO_HARDWARE',
-  NOT_ENROLLED = 'NOT_ENROLLED',
-  CANCELED = 'CANCELED',
-  DISABLED = 'DISABLED',
-  LOCKOUT = 'LOCKOUT',
-  USER_FALLBACK = 'USER_FALLBACK',
-  NOT_AVAILABLE = 'NOT_AVAILABLE',
-  UNKNOWN = 'UNKNOWN',
-}
-
-export interface BiometricError {
-  type: BiometricErrorType;
-  message: string;
-}
 
 export async function authenticateWithBiometrics(): Promise<boolean> {
   const hasHardware = await LocalAuthentication.hasHardwareAsync();
@@ -29,8 +13,8 @@ export async function authenticateWithBiometrics(): Promise<boolean> {
   }
 
   const result = await LocalAuthentication.authenticateAsync({
-    promptMessage: 'Authenticate to access your transactions',
-    fallbackLabel: 'Use passcode',
+    promptMessage: 'Authenticate with Face ID',
+    disableDeviceFallback: false,
   });
 
   if (result.success) {
