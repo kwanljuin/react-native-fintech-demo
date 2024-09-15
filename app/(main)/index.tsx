@@ -6,6 +6,7 @@ import {
   StyleSheet,
   SectionList,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { TransactionItem } from '@/components/TransactionItem';
@@ -16,12 +17,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { authenticateWithBiometrics } from '@/services/auth';
 
 export default function TransactionHistory() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showAmounts, setShowAmounts] = useState(false);
   const [groupedTransactions, setGroupedTransactions] = useState<
     GroupedTransactions[]
   >([]);
-  const [showAmounts, setShowAmounts] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const router = useRouter();
 
   const revealAmounts = async () => {
     if (!showAmounts) {
@@ -74,10 +77,22 @@ export default function TransactionHistory() {
   }
 
   const loadTransactions = useCallback(async () => {
-    const data = await getTransactions();
-    const sorted = sortTransactionsByDate(data);
-    const grouped = groupTransactionsByDate(sorted);
-    setGroupedTransactions(grouped);
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getTransactions();
+      const sorted = sortTransactionsByDate(data);
+      const grouped = groupTransactionsByDate(sorted);
+      setGroupedTransactions(grouped);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const onRefresh = useCallback(async () => {
@@ -96,6 +111,22 @@ export default function TransactionHistory() {
       params: { id },
     });
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -134,6 +165,27 @@ export default function TransactionHistory() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notFoundContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notFoundText: {
+    fontSize: 18,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 18,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',

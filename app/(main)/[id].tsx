@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getTransactionById } from '@/services/transactions';
@@ -10,22 +17,52 @@ import { formatDate, formatTime } from '@/utils/date';
 export default function TransactionDetail() {
   const { id } = useLocalSearchParams();
   const [transaction, setTransaction] = useState<Transaction | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, authenticate } = useBiometrics();
 
   useEffect(() => {
     const loadTransaction = async () => {
       if (typeof id === 'string') {
-        const data = await getTransactionById(id);
-        setTransaction(data);
+        setLoading(true);
+        setError(null);
+        try {
+          const data = await getTransactionById(id);
+          setTransaction(data);
+        } catch (err) {
+          if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError('An unknown error occurred');
+          }
+        } finally {
+          setLoading(false);
+        }
       }
     };
     loadTransaction();
   }, [id]);
 
-  if (!transaction) {
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading...</Text>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+      </View>
+    );
+  }
+
+  if (!transaction) {
+    return (
+      <View style={styles.notFoundContainer}>
+        <Text style={styles.notFoundText}>Transaction Not Found</Text>
       </View>
     );
   }
@@ -116,18 +153,30 @@ function DetailItem({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F0F0F5',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  loadingText: {
+  notFoundContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notFoundText: {
     fontSize: 18,
-    color: '#007AFF',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 18,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#F0F0F5',
   },
   card: {
     backgroundColor: 'white',
